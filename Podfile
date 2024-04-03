@@ -10,9 +10,6 @@ target 'geeve' do
 pod 'AEOTPTextField'
 pod 'IQKeyboardManagerSwift'
 pod 'SideMenu'
-pod 'FirebaseAnalytics'
-pod 'FirebaseAuth'
-pod 'FirebaseFirestore'
 pod 'RealmSwift'
 pod 'NVActivityIndicatorView'
   target 'geeveTests' do
