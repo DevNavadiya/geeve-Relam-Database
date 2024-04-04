@@ -17,14 +17,6 @@ class registrationViewController: UIViewController {
     @IBOutlet weak var sidebar: UIButton!
 //    var data = [UserSingIn]()
     
-   
-  
-    
-    
-    
-    enum animationtup {
-        case slidein , slideout
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,32 +56,32 @@ class registrationViewController: UIViewController {
     @IBAction func donre_action(_ sender: UIButton) {
         
         if !sender.isSelected {
-            // Select the sender button
+            
             sender.isSelected = true
             sender.layer.borderWidth = 5
             sender.layer.borderColor = UIColor.orange.cgColor
             
-            // Deselect the other button
+            
             donee.isSelected = false
             donee.layer.borderWidth = 0
         } else {
-            // Deselect the sender button
+            
             sender.isSelected = false
             sender.layer.borderWidth = 0
         }
     }
     @IBAction func done_acttion(_ sender: UIButton) {
         if !sender.isSelected {
-            // Select the sender button
+            
             sender.isSelected = true
             sender.layer.borderWidth = 5
             sender.layer.borderColor = UIColor.orange.cgColor
             
-            // Deselect the other button
+            
             donor_btn.isSelected = false
             donor_btn.layer.borderWidth = 0
         } else {
-            // Deselect the sender button
+            
             sender.isSelected = false
             sender.layer.borderWidth = 0
         }

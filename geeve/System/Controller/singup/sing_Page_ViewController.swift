@@ -6,8 +6,7 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseFirestore
+import RealmSwift
 
 
 
@@ -44,7 +43,8 @@ class sing_Page_ViewController: UIViewController , UITextFieldDelegate {
     var phone : String?
     var pass : String?
     let data = defultdata.sher
-    
+    var dataArryOfRealm = [modulforReamldata]()
+    var index : Int?
     
     
     
@@ -69,8 +69,8 @@ class sing_Page_ViewController: UIViewController , UITextFieldDelegate {
         
         // Do any additional setup after loading the view.
         self.phone_number_textFild.keyboardType = .numberPad
-        
-        
+       
+        dataArryOfRealm = dataBaseHelperRealm.sher.DataFromeRealm()
         
         
         
@@ -88,11 +88,7 @@ class sing_Page_ViewController: UIViewController , UITextFieldDelegate {
     }
     
     // MARK: - terms butoon condition -
-    
-    
-    
-    
-    
+  
     @IBAction func tic(_ sender: Any) {
         
         
@@ -153,60 +149,47 @@ class sing_Page_ViewController: UIViewController , UITextFieldDelegate {
         }
         
         else {
-            Auth.auth().createUser(withEmail: self.Email_Textfiled.text ?? "nil" , password: self.paswoord_Text_filed.text ?? "nil"){otheruser,error in
-                if let error = error as? NSError {
-                    print(error.localizedDescription)
-                }else{
-                    print("user rejister")
-                    let userInfo = Auth.auth().currentUser
-                    self.id = userInfo!.uid
-                    
-                }
-                
-            }
-            
+         
             if shoudhideui == false {
-                
-                
-                if let email = Email_Textfiled.text, !email.isEmpty {
-                    checkEmailExistence(email) { emailExists in
-                        if emailExists {
-                            DispatchQueue.main.async {
-                                let alert = UIAlertController(title: "Email Already Exists", message: "The email you entered is already registered. Please use a different email or sign in.", preferredStyle: .alert)
-                                alert.addAction(UIAlertAction(title: "OK", style: .default))
-                                self.present(alert, animated: true)
-                            }
-                        } else {
-                            
-                            acces()
-                        }
-                    }
-                } else {
-                    
-                }
-                
-                func acces () {   let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "otpViewController") as! otpViewController
-                    
-                    
-                    data.setname(firestname: self.firest_Name_Texfild.text ?? "")
-                    data.setlastname(lastname: self.last_Name_TextFileld.text ?? "")
-                    data.setemail(email: self.Email_Textfiled.text ?? "")
-                    data.setphoneNumber(phonenumber: self.phone_number_textFild.text ?? "")
-                    data.setpassword(password: self.paswoord_Text_filed.text ?? "")
-                    
-                    saveUserData(name: self.data.getname() ?? "", lastname: self.data.getlastname() ?? "" , Email: self.data.getemail() ?? "", phonenumber: self.data.getphoneNumber() ?? "", Password: self.data.getpassword() ?? "", id: self.id)
-                    
+                let realm = try! Realm()
+                if realm.objects(modulforReamldata.self).filter("email == %@", self.Email_Textfiled.text!).first != nil {
+                       let alert = UIAlertController(title: "User already exists", message: "An account with this email already exists", preferredStyle: .alert)
+                       let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                       alert.addAction(okAction)
+                       present(alert, animated: true, completion: nil)
+                       return
                    
-                vc.notindata = self.Email_Textfiled.text ?? ""
-                    
-                    self.navigationController?.pushViewController(vc, animated: true )
-                    
-                }
+                
+                    }else{
+                        
+                        
+                        let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "registrationViewController") as! registrationViewController
+                        
+                        
+                        data.setname(firestname: self.firest_Name_Texfild.text ?? "")
+                        data.setlastname(lastname: self.last_Name_TextFileld.text ?? "")
+                        data.setemail(email: self.Email_Textfiled.text ?? "")
+                        data.setphoneNumber(phonenumber: self.phone_number_textFild.text ?? "")
+                        data.setpassword(password: self.paswoord_Text_filed.text ?? "")
+                        
+                        
+                        let realmdata = modulforReamldata.init(name: defultdata.sher.getname() ?? "", lastname: defultdata.sher.getlastname() ?? "", phonenumber: defultdata.sher.getphoneNumber() ?? "", email: defultdata.sher.getemail() ?? "", password: defultdata.sher.getpassword() ?? "", conformPassword: defultdata.sher.getpassword() ?? "")
+                        
+                        dataBaseHelperRealm.sher.savedata(data: realmdata)
+                        
+                        //                     vc.notindata = self.Email_Textfiled.text ?? ""
+                        
+                        self.navigationController?.pushViewController(vc, animated: true )
+                    }
+                
                 
             }else{
                 
                 let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "donationPagesViewController") as! donationPagesViewController
-                self.updateUser()
+              
+                guard let userindex = index else{return}
+               updataUser()
+                
                 self.navigationController?.pushViewController(vc, animated: true)
                 
             }
@@ -226,71 +209,29 @@ class sing_Page_ViewController: UIViewController , UITextFieldDelegate {
     @IBAction func privicy(_ sender: Any) {
         
         navigateToViewController(main: "Main", storyboard: "webViewController", navigationController: self.navigationController)
-        
-        
-        
-        
+    
     }
+ }
+
+
+extension  sing_Page_ViewController {
     
     
-    func updateUser() {
+    func updataUser () {
+        let realm = try! Realm()
         
         
-        let database = Firestore.firestore()
-        let userRef = database.collection("Userinfo").document(email ?? "")
+        if let existingUser = realm.objects(modulforReamldata.self).filter("email == %@", email ?? "").first {
+            let existingUserId = existingUser._id
         
-        userRef.updateData([
-            "name": firest_Name_Texfild.text ?? "",
-            "lastname": last_Name_TextFileld.text ?? "",
-            "Email": email ?? "",
-            "phonenumber": phone_number_textFild.text ?? "",
-            "Password": paswoord_Text_filed.text ?? ""
-        ]) { [weak self] error in
-            if let error = error {
-                print("Error updating user data: \(error.localizedDescription)")
-            } else {
-                print("User data updated successfully")
-                
-                // Update the firedata array with the updated user data
-                if let index = userdata.sherd.firedata.firstIndex(where: { $0.Email == self?.email }) {
-                    userdata.sherd.firedata[index] = userdata.firebaseuser(dic: [
-                        "name": self?.firest_Name_Texfild.text ?? "",
-                        "lastname": self?.last_Name_TextFileld.text ?? "",
-                        "Email": self?.email ?? "",
-                        "phonenumber": self?.phone_number_textFild.text ?? "",
-                        "Password": self?.paswoord_Text_filed.text ?? ""
-                    ], documentId: defultdata.sher.getemail() ?? "")
-                }
-                
-                // Refresh the data in the donationPagesViewController
-                if let donationVC = self?.navigationController?.viewControllers.last as? donationPagesViewController {
-                    donationVC.dataFromeFirebaseHelper = userdata.sherd.firedata
-                    donationVC.tabelview.reloadData()
-                }
-            }
+            let newUserData = modulforReamldata(name: self.firest_Name_Texfild.text ?? "", lastname: self.last_Name_TextFileld.text ?? "", phonenumber: self.phone_number_textFild.text ?? "", email: self.Email_Textfiled.text ?? "", password: self.paswoord_Text_filed.text ?? "", conformPassword: self.enter_conform_password_textfild.text ?? "")
+            newUserData._id = existingUserId
+            dataBaseHelperRealm.sher.updateUser(with: newUserData)
+        } else {
+           return
         }
     }
     
     
 }
 
-
-
-extension sing_Page_ViewController {
-    
-    func checkEmailExistence(_ email: String, completion: @escaping (Bool) -> Void) {
-        let db = Firestore.firestore()
-        db.collection("Userinfo").whereField("Email", isEqualTo: email).getDocuments { (snapshot, error) in
-            if let error = error {
-                print("Error checking email existence: \(error.localizedDescription)")
-                completion(false)
-            } else {
-                if let snapshot = snapshot, !snapshot.documents.isEmpty {
-                    completion(true)
-                } else {
-                    completion(false)
-                }
-            }
-        }
-    }
-}

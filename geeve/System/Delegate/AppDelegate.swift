@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 import IQKeyboardManagerSwift
-import FirebaseCore
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,12 +17,12 @@ var window: UIWindow?
 var appstart = "appstart"
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-//        if let url = realmdatabasehelper.shard.getdatabaseurl() {
-//            print("this is database url " , url)
-//        }
+        if let url = dataBaseHelperRealm.sher.getdxatabaseurl(){
+            print("this is database url " , url)
+      }
        
         IQKeyboardManager.shared.enable = true
-        FirebaseApp.configure()
+       
         return true
     }
 

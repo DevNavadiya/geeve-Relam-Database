@@ -18,9 +18,8 @@ class donationPagesCellTableViewCell: UITableViewCell {
     @IBOutlet weak var deletdata: UIButton!
     
     var oneditbuttontap: (() -> Void)!
+    var onDeleteButtonTapped: (() -> Void)!
     
-    var documentid : String?
-    var onDeleteButtonTapped: (() -> Void)?
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
@@ -37,7 +36,7 @@ class donationPagesCellTableViewCell: UITableViewCell {
     @IBAction func deletbuttontap(_ sender: Any) {
         
         onDeleteButtonTapped?()
-//        realmdatabasehelper.shard.dataMatcherFirebaseToRealmdatabase()
+
     }
     
     

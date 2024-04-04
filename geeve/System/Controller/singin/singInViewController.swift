@@ -6,8 +6,8 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseFirestore
+import RealmSwift
+
 
 
 class singInViewController: UIViewController {
@@ -54,60 +54,41 @@ class singInViewController: UIViewController {
     }
     
     @IBAction func signInButtonTapped(_ sender: Any) {
-        guard let email = self.email.text, !email.isEmpty,
-              let password = self.pass.text, !password.isEmpty else {
-            if email.text!.isEmpty{ showAlert(title: "email", message: "Please enter email.") }else{
-                showAlert(title: "Password", message: "Please enter Password.")
-            }
-            return
-        }
-        let db = Firestore.firestore()
-        let userInfoRef = db.collection("Userinfo").document(email)
+        let realm = try! Realm()
         
-        userInfoRef.getDocument { [weak self] (document, error) in
-            guard let strongSelf = self else { return }
+        if let existingUserWithEmail = realm.objects(modulforReamldata.self).filter("email == %@", self.email.text!).first {
+               
+            if existingUserWithEmail.password == pass.text! {
+                data()
+                } else {
+                   showAlert(title: "Password Not exists", message: "The password you entered is incorrect")
+             }
+        } else {
+            showAlert(title: "User Not exists", message: "An account with this email doesn't exist")
+            }
+       
+    
+        func data () {
+            defultdata.sher.setlogindata(notindata: self.email.text ?? "")
+            defultdata.sher.setloginpass(notindata: self.email.text ?? "")
             
-            if let error = error {
-                print("Error fetching user document: \(error.localizedDescription)")
-                strongSelf.showAlert(title: "Error", message: "Failed to authenticate. Please try again.")
-                return
-            }
+            print("userlogin")
             
-            guard let document = document, document.exists else {
-                strongSelf.showAlert(title: "User Not Exist", message: "User not found.")
-                return
-            }
-            let userData = document.data()
-            if let storedPassword = userData?["Password"] as? String, storedPassword == password {
-                
-                strongSelf.navigateToNextScreen()
-            } else {
-                strongSelf.showAlert(title: "Password Not Exist", message: "Incorrect password.")
-            }
+            
+            
+            let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "registrationViewController") as! registrationViewController
+            
+            self.navigationController?.pushViewController(vc, animated: true)
         }
+        
     }
-    
-    
+   
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okAction)
         present(alert, animated: true, completion: nil)
-    }
-    
-    private func navigateToNextScreen() {
-        defultdata.sher.setlogindata(notindata: self.email.text ?? "")
-        defultdata.sher.setloginpass(notindata: self.email.text ?? "")
-        
-        print("userlogin")
-        
-        let userinfo = Auth.auth().currentUser
-        login(Email: self.email.text ?? "", Password: self.pass.text ?? "" )
-        
-        let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "registrationViewController") as! registrationViewController
-        vc.notindata = defultdata.sher.getlogindata() ?? ""
-        self.navigationController?.pushViewController(vc, animated: true)
-        
     }
     
     //    MARK: - forgatpassbtn conditon -
@@ -144,37 +125,3 @@ class singInViewController: UIViewController {
     }
 }
 
-extension singInViewController {
-    
-    func checkEmailExistence(_ email: String, completion: @escaping (Bool) -> Void) {
-        let db = Firestore.firestore()
-        db.collection("Userinfo").whereField("Email", isEqualTo: email).getDocuments { (snapshot, error) in
-            if let error = error {
-                print("Error checking email existence: \(error.localizedDescription)")
-                completion(false)
-            } else {
-                if let snapshot = snapshot, !snapshot.documents.isEmpty {
-                    completion(true)
-                } else {
-                    completion(false)
-                }
-            }
-        }
-    }
-    
-    func checkPassword(_ email: String, _ password: String, completion: @escaping (Bool) -> Void) {
-        let db = Firestore.firestore()
-        db.collection("Userinfo").whereField("Email", isEqualTo: email).whereField("Password", isEqualTo: password).getDocuments { (snapshot, error) in
-            if let error = error {
-                print("Error checking password: \(error.localizedDescription)")
-                completion(false)
-            } else {
-                if let snapshot = snapshot, !snapshot.documents.isEmpty {
-                    completion(true)
-                } else {
-                    completion(false)
-                }
-            }
-        }
-    }
-}

@@ -1,88 +1,84 @@
-////
-////  realm database helper.swift
-////  geeve
-////
-////  Created by Dev Navadiya on 01/04/24.
-////
-//
-//import Foundation
-//import UIKit
-//import RealmSwift
-//
-//
-//
-//
-//class datafromefirebaseToRealm : Object {
-//    
-//       @Persisted(primaryKey: true) var id: String = ""
-//       @Persisted var userName: String = ""
-//       @Persisted var email: String = ""
-//       @Persisted var lastName: String = ""
-//       @Persisted var password: String = ""
-//       @Persisted var phoneNumber: String = ""
-//    convenience init(userid: String, userName: String, email: String, lastName: String, password: String, phoneNumber: String) {
-//        self.init()
-//        self.id = userid
-//        self.userName = userName
-//        self.email = email
-//        self.lastName = lastName
-//        self.password = password
-//        self.phoneNumber = phoneNumber
-//    }
-//    
-//}
-//
-//var realmdata = [datafromefirebaseToRealm]()
-//
-//class realmdatabasehelper {
-//    
-//    static let shard = realmdatabasehelper()
-//    
-//    let realm = try! Realm()
-//    
-//    
-//    
-//    func getdatabaseurl () -> URL? {
-//        return Realm.Configuration.defaultConfiguration.fileURL
-//    }
-//    
-//    func savedata (data : datafromefirebaseToRealm) {
-//        if let existingObject = realm.object(ofType: datafromefirebaseToRealm.self, forPrimaryKey: data.id) {
-//            // Object with the same primary key value already exists, handle it accordingly
-//            // For example, you might update the existing object with new data
-//            try! realm.write {
-//                existingObject.userName = data.userName
-//                existingObject.email = data.email
-//                // Update other properties as needed
-//            }
-//        } else {
-//            // Object with the same primary key value doesn't exist, add a new one
-//            try! realm.write {
-//                realm.add(data)
-//            }
-//        }
-//    }
-//    
-//    
-//    func dataMatcherFirebaseToRealmdatabase() {
-//        let firebaseData = userdata.sherd.sharDataFromeGetdata()
-//        let realmData = Array(realm.objects(datafromefirebaseToRealm.self))
-//        
-//        let firebaseIds = Set(firebaseData.map { $0.id })
-//        let realmIds = Set(realmData.map { $0.id })
-//        
-//        let idsToRemoveFromRealm = realmIds.subtracting(firebaseIds)
-//        
-//      
-//        for id in idsToRemoveFromRealm {
-//            if let userToDelete = realmData.first(where: { $0.id == id }) {
-//                try! realm.write {
-//                    realm.delete(userToDelete)
-//                }
-//            }
-//        }
-//    }
-//
-//    
-//}
-//
+
+
+import UIKit
+import RealmSwift
+
+class modulforReamldata : Object {
+    
+  @Persisted  var name : String
+  @Persisted  var lastname : String
+  @Persisted var phonenumber : String
+  @Persisted var email : String
+  @Persisted  var password : String
+  @Persisted var conformPassword : String
+  @Persisted (primaryKey: true) var _id: ObjectId
+    
+   convenience init(name: String, lastname: String, phonenumber: String, email: String, password: String, conformPassword: String) {
+      
+        self.init()
+        self.name = name
+        self.lastname = lastname
+        self.phonenumber = phonenumber
+        self.email = email
+        self.password = password
+        self.conformPassword = conformPassword
+       
+    }
+    
+}
+
+
+class dataBaseHelperRealm {
+    
+    
+    func getdxatabaseurl () -> URL? {
+        return Realm.Configuration.defaultConfiguration.fileURL
+    }
+    
+    static let sher = dataBaseHelperRealm()
+    
+    let realm = try! Realm()
+    
+    func savedata (data : modulforReamldata) {
+        
+        try! realm.write({
+            realm.add(data)
+        })
+        
+    }
+    
+    func DataFromeRealm () -> [modulforReamldata]{
+       
+        return Array(realm.objects(modulforReamldata.self))
+        
+
+    }
+    
+    
+    func deletdata (modulforReamldata : modulforReamldata) {
+        try! realm.write({
+            realm.delete(modulforReamldata.self)
+        })
+    }
+    
+    func updateUser(with newData: modulforReamldata) {
+        guard let existingUser = realm.object(ofType: modulforReamldata.self, forPrimaryKey: newData._id) else {
+               // Handle the case where the object with the given primary key doesn't exist
+               return
+        }
+
+        do {
+            try realm.write {
+                existingUser.name = newData.name
+                existingUser.lastname = newData.lastname
+                existingUser.phonenumber = newData.phonenumber
+                existingUser.email = newData.email
+                existingUser.password = newData.password
+                existingUser.conformPassword = newData.conformPassword
+            }
+        } catch {
+            // Handle the error
+            print("Error updating user: \(error.localizedDescription)")
+        }
+    }
+}

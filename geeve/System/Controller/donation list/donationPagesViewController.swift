@@ -12,10 +12,10 @@ import SideMenu
 class donationPagesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
    
     var userin = UserDefaults.standard
-
+    var dataArryOfRealm = [modulforReamldata]()
     @IBOutlet weak var tabelview: UITableView!
 //    var data = [UserSingUp]()
-    var dataFromeFirebaseHelper = userdata.sherd.sharDataFromeGetdata()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,103 +23,73 @@ class donationPagesViewController: UIViewController, UITableViewDelegate, UITabl
         self.tabelview.delegate = self
         self.tabelview.dataSource = self
         self.tabelview.register(UINib(nibName: "donationPagesCellTableViewCell", bundle: nil), forCellReuseIdentifier: "donationPagesCellTableViewCell")
-      
-        userdata.sherd.dataChangedHandler = { [weak self] in
-               self?.dataFromeFirebaseHelper = userdata.sherd.sharDataFromeGetdata()
-               self?.tabelview.reloadData()
-           }
+        dataArryOfRealm = dataBaseHelperRealm.sher.DataFromeRealm()
+        // Fetch the initial data
+        
+        
+    }
+        
+        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return dataArryOfRealm.count
+            
+        }
+        
+    
+        
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            
+            let cell = tableView.dequeueReusableCell(withIdentifier: "donationPagesCellTableViewCell") as! donationPagesCellTableViewCell
+            
+            let index = dataArryOfRealm[indexPath.row]
+            cell.name.text = index.name
+            cell.age.text = index.email
            
-           // Fetch the initial data
-           userdata.sherd.getdata(noindata: "")
-       
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//                       realmdatabasehelper.shard.dataMatcherFirebaseToRealmdatabase()
-//                   }
-        
-    }
-    
-    
-    
-//    func syncData() {
-//          // Synchronize Firebase and Realm data here
-//          realmdatabasehelper.shard.dataMatcherFirebaseToRealmdatabase()
-//      }
-    
-
-//    func relodedata () {
-//        self.dataFromeFirebaseHelper = userdata.sherd.sharDataFromeGetdata()
-//        self.tabelview.reloadData()
-//        
-//    }
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataFromeFirebaseHelper.count
-        
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       
-        let cell = tableView.dequeueReusableCell(withIdentifier: "donationPagesCellTableViewCell") as! donationPagesCellTableViewCell
-        
-        let index = dataFromeFirebaseHelper[indexPath.row]
-        
-        
-        cell.name.text = index.UserName
-        cell.age.text = index.Email
-        cell.documentid = index.Email
-
-
-         cell.onDeleteButtonTapped = { [weak self] in
-               self?.deleteData(at: indexPath)
-//            realmdatabasehelper.shard.dataMatcherFirebaseToRealmdatabase()
-        }
-        
-        cell.oneditbuttontap = {
-            let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "sing_Page_ViewController") as! sing_Page_ViewController
-            
-            vc.shoudhideui = true
-            
-            vc.firestname = index.UserName
-            vc.lastname = index.lastname
-            vc.email = index.Email
-            vc.pass = index.password
-            vc.phone = index.phonenumber
-            
-            self.navigationController?.pushViewController(vc, animated: true)
-        }
-        
-        return cell
-      
-        
-    }
-    
-   
-    
-    func deleteData(at indexPath: IndexPath) {
-        let documentId = dataFromeFirebaseHelper[indexPath.row].Email
-        userdata.sherd.deleteDocument(documentId: documentId) { [weak self] error in
-            if let error = error {
-                print("Error deleting document: \(error)")
-            } else {
+            cell.oneditbuttontap = {
+                let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "sing_Page_ViewController") as! sing_Page_ViewController
                 
-                self?.dataFromeFirebaseHelper.remove(at: indexPath.row)
-              
-                self?.tabelview.reloadData()
+                vc.shoudhideui = true
                 
-                
-//                realmdatabasehelper.shard.dataMatcherFirebaseToRealmdatabase()
+                vc.firestname = index.name
+                vc.lastname = index.lastname
+                vc.email = index.email
+                vc.pass = index.password
+                vc.phone = index.phonenumber
+                vc.index = indexPath.row
+                self.navigationController?.pushViewController(vc, animated: true)
             }
+            
+            cell.onDeleteButtonTapped = {
+                
+                let alert = UIAlertController(title: "Confirmation", message: "Are you sure you want to delete \(index.name)? You cannot undo this action.", preferredStyle: .alert)
+                let btn = UIAlertAction(title: "Delete", style: .destructive) {btn in
+                    dataBaseHelperRealm.sher.deletdata(modulforReamldata: self.dataArryOfRealm[indexPath.row])
+                    self.dataArryOfRealm.remove(at: indexPath.row)
+                    self.tabelview.reloadData()
+                    
+                  }
+                alert.addAction(btn)
+                let btn1 = UIAlertAction(title: "Cancel", style: .cancel) { btn1 in
+                    self.dismiss(animated: true)
+                    
+                }
+                alert.addAction(btn1)
+                self.present(alert, animated: true)
+                
         }
-    }
-
-   
-    @IBAction func sidebar(_ sender: Any) {
+            
+            return cell
+            
+            
+        }
         
-        setSideMenu()
-       
+        @IBAction func sidebar(_ sender: Any) {
+            
+            setSideMenu()
+            
+        }
+        
+        
     }
-    
-   
-}
 
 extension donationPagesViewController {
     
@@ -157,18 +127,7 @@ extension donationPagesViewController {
         
     }
   
-    func reloadData() {
-        userdata.sherd.getdata(noindata: "") // Fetch all data
-        dataFromeFirebaseHelper = userdata.sherd.sharDataFromeGetdata()
-        DispatchQueue.main.async {
-            self.tabelview.reloadData()
-            
-            
-                
-              
-            
-            
-        }
-    }
-
+    
+  
+    
 }
